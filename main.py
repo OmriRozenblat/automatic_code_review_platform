@@ -1,16 +1,38 @@
 
-import scan.scan as scan
+import threading
 
+
+import scan.scan as scan
 import codeReviewer.codeReviewer as codeReviewer
 
+running_scans = 0
+resource_lock = threading.Lock()
 
 
 
-def main():
+
+def review(scan: scan.Scan, max_scans):
+    global running_scans
+    with resource_lock:
+        if running_scans >= max_scans:
+            print("Maximum scans reached. try again later")
+            return
+        running_scans+=1
+    try:
+        code_reviewer = codeReviewer.CodeReviewer()
+        print("Reviewing file!\n")
+        code_reviewer.review()
+
+    finally:
+        with resource_lock:
+            running_scans -= 1
+
+
+
+def get_scan():
     print("Welcome to the ACR!\n")
     while True: 
-        user_input = input("Would you like to fetch results or enter a new scan?\n" \
-        "Enter scan for new scan, results for fetching results, q to quit  \n")
+        user_input = input("Would you like to fetch results or enter a new scan?\n" "Enter scan for new scan, results for fetching results, q to quit  \n")
         if user_input == "scan":
             current_scan = scan.Scan()
             while True:
@@ -31,12 +53,11 @@ def main():
                     path = input("Enter path to python file, or add it to the folder, then press Enter: \n")
                     current_scan.get_file_from_path(path)
 
-                    #need to add the scan to some queue
-                    code_reviewer = codeReviewer.CodeReviewer(current_scan)
-                    print("Reviewing file!\n")
-                    codeReviewer.review()
+                    #call thread with this scan
+                    thread = threading.Thread(target=review, args=(current_scan, 5))
+                    thread.start()
+                    break
 
-                    
                 
                 elif user_input2 == "q":
                     return 0
@@ -49,6 +70,11 @@ def main():
         
         elif user_input == "q":
             return 0
+        else:
+            print("Not a valid input")
         
 
-main()
+    
+        
+if __name__ == "__main__":
+    get_scan()
