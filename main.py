@@ -6,6 +6,7 @@ import threading
 import scan.scan as scan
 import codeReviewer.codeReviewer as codeReviewer
 import codeReviewer.ollamaProvider as ollamaProvider
+import db.scan_db as scan_db
 
 running_scans = 0
 resource_lock = threading.Lock()
@@ -63,6 +64,12 @@ def get_scan():
                     #maybe just add it to folder and cancel the path part
                     path = input("Enter path to python file, or add it to the folder, then press Enter: \n")
                     current_scan.get_file_from_path(path)
+
+                    #adding scan to DB
+                    print("scan_db imported from:", scan_db.__file__)
+                    db = scan_db.ScanDB()
+                    scan_id = db.insert_new_scan(current_scan)
+                    print(f"Your new scan id is {scan_id}. Keep it for future use")
 
                     #call thread with this scan
                     thread = threading.Thread(target=review, args=(current_scan, 5))

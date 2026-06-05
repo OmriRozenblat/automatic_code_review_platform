@@ -21,10 +21,11 @@ class CodeReviewer:
         ]
 
         model_result =  self.model_provider.generate(messages).strip().upper()
-        if model_result == "Yes":
-            return "Yes"
+        print(model_result + "\n")
+        if model_result == "YES":
+            return "TRUE"
         if model_result == "NO":
-            return "NO"
+            return "FALSE"
         return "INVALID_MODEL_OUTPUT"
 
 

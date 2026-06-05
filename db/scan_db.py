@@ -7,8 +7,10 @@ import scan.scan as scan
 class ScanDB:
 
     def __init__(self):
+    
+        self.path = "scan_results.db"
 
-        conn = sqlite3.connect("scan_results.db")
+        conn = sqlite3.connect(self.path)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -25,19 +27,18 @@ class ScanDB:
         conn.close()
 
 
-    def insert(self, scan: scan.Scan):
-        conn = sqlite3.connect("scan_results.db")
+    def insert_new_scan(self, scan: scan.Scan):
+        conn = sqlite3.connect(self.path)
         cursor = conn.cursor()
 
         cursor.execute("""
         INSERT INTO scans (
             file_name,
             rules,
-            result,
             created_at
         )
-        VALUES (?, ?, ?, datetime('now'));
-        """, (scan.file_name, scan.convert_rules_to_text(), scan.get_result(), ))
+        VALUES (?, ?, datetime('now'));
+        """, (scan.file_name, scan.convert_rules_to_text(), ))
 
         scan_id = cursor.lastrowid
 
@@ -45,16 +46,36 @@ class ScanDB:
         conn.close()
         return scan_id
                 
+    def update_scan(self, scan: scan.Scan):
+        conn = sqlite3.connect(self.path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+        UPDATE scans
+        SET result = ?
+        WHERE id = ?;
+        """, (scan.get_result(), scan.get_id()))
+
+        conn.commit()
+        conn.close()
 
     def get_scan(self, scan_id: int):
-        pass
+        conn = sqlite3.connect(self.path)
+        cursor = conn.cursor()
 
-    def remove_scan(self, scan_id: int):
-        pass
+        
+
+        cursor.execute(""" DELETE FROM scans WHERE created_at < datetime('now', '-24 hours')
+                        AND id = ?; """,(scan_id,)) 
+        
+        cursor.execute(""" SELECT id, file_name, result,
+                        created_at FROM scans WHERE id = ?; """, (scan_id,))
+
+        row = cursor.fetchone()
+
+        conn.close()
+        #may return None, depanding if row exist\expired
+        return row
 
 
-def insert_to_db(scan: scan.Scan):
-    conn = sqlite3.connect("example.db")
-    cursor = conn.cursor()
 
-    pass
