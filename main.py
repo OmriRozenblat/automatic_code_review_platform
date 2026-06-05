@@ -46,7 +46,7 @@ def review(scan: scan.Scan, max_scans, db: scan_db.ScanDB):
 def get_scan():
 
     print("Welcome to the ACR!\n")
-    db = scan_db.ScanDB() #might be better to init at first
+    db = scan_db.ScanDB()
 
     while True: 
         user_input = input("Would you like to fetch results or enter a new scan?\n" "Enter scan for new scan, fetch for fetching results, q to quit  \n")
@@ -71,7 +71,10 @@ def get_scan():
                     current_scan.get_file_from_path(path)
 
                     #adding scan to DB
-                    scan_id = db.insert_new_scan(current_scan)
+                    status, scan_id = db.insert_new_scan(current_scan)
+                    if status == "exists":
+                        print(f"Scan already exists with scan_id {scan_id}")
+                        break
                     print(f"Your new scan id is {scan_id}. Keep it for future use")
 
                     #call thread with this scan
