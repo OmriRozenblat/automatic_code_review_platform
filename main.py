@@ -14,7 +14,7 @@ resource_lock = threading.Lock()
 
 
 
-def review(scan: scan.Scan, max_scans):
+def review(scan: scan.Scan, max_scans, db: scan_db.ScanDB):
     global running_scans
     with resource_lock:
         if running_scans >= max_scans:
@@ -34,17 +34,22 @@ def review(scan: scan.Scan, max_scans):
         result = code_reviewer.review(scan)
         print(result)
         scan.add_result(result)
+        db.update_scan(scan)
 
     finally:
         with resource_lock:
             running_scans -= 1
+        
 
 
 
 def get_scan():
+
     print("Welcome to the ACR!\n")
+    db = scan_db.ScanDB() #might be better to init at first
+
     while True: 
-        user_input = input("Would you like to fetch results or enter a new scan?\n" "Enter scan for new scan, results for fetching results, q to quit  \n")
+        user_input = input("Would you like to fetch results or enter a new scan?\n" "Enter scan for new scan, fetch for fetching results, q to quit  \n")
         if user_input == "scan":
             current_scan = scan.Scan()
             while True:
@@ -66,13 +71,11 @@ def get_scan():
                     current_scan.get_file_from_path(path)
 
                     #adding scan to DB
-                    print("scan_db imported from:", scan_db.__file__)
-                    db = scan_db.ScanDB()
                     scan_id = db.insert_new_scan(current_scan)
                     print(f"Your new scan id is {scan_id}. Keep it for future use")
 
                     #call thread with this scan
-                    thread = threading.Thread(target=review, args=(current_scan, 5))
+                    thread = threading.Thread(target=review, args=(current_scan, 5, db))
                     thread.start()
                     break
 
@@ -83,8 +86,9 @@ def get_scan():
                 else:
                     print("Invalid input, try again\n")
         
-        elif user_input == "results":
-            pass
+        elif user_input == "fetch":
+            fetch_scan_id = input(f"Please enter scan id: \n")
+            print(db.get_scan(fetch_scan_id))
         
         elif user_input == "q":
             return 0

@@ -41,6 +41,7 @@ class ScanDB:
         """, (scan.file_name, scan.convert_rules_to_text(), ))
 
         scan_id = cursor.lastrowid
+        scan.update_id(scan_id)
 
         conn.commit()
         conn.close()

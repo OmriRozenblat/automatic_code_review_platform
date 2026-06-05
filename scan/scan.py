@@ -7,6 +7,7 @@ class Scan:
         default_rules_path = Path(__file__).parent / "default_rules.txt"
         with open(default_rules_path, 'r') as f:
             self.rules = f.read().splitlines() 
+        self.id = 0
     
     def get_file_from_path(self, path: str):
         if not path:
@@ -41,6 +42,11 @@ class Scan:
     def get_content(self):
         return self.content
 
+    def get_id(self):
+        return self.id
+
+    def update_id(self, id):
+        self.id = id
     
     def get_file_path(self):
         return self.path

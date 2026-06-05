@@ -32,9 +32,9 @@ class CodeReviewer:
 
     def _build_user_prompt(self, scan: scan.Scan) -> str:
         
-        print("scan file content\n")
-        print(scan.get_content())
-        print("------------------")
+        ##print("scan file content\n")
+        ##print(scan.get_content())
+        ##print("------------------")
 
         return f"""
             Check whether the following Python code complies with this rule.
