@@ -30,6 +30,13 @@ class Scan:
     def get_rules(self):
         return self.rules
     
+    def convert_rules_to_text(self):
+        rules_text = "\n".join(
+            f"{index + 1}. {rule}"
+            for index, rule in enumerate(self.get_rules())
+        )
+        return rules_text
+    
     def get_content(self):
         return self.content
 
