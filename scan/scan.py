@@ -19,6 +19,7 @@ class Scan:
             self.path = Path(path)
             print(self.path)
         #check given path
+        self.file_name = self.path.name
         try:
             with open(self.path, "r") as f:
                 self.content = f.read()
@@ -47,6 +48,12 @@ class Scan:
     def add_rule(self, rule: str):
         self.rules.append(rule)
         print("Rule added to scan\n")
+
+    def add_result(self, result: str):
+        self.result = result
+
+    def get_result(self):
+        return self.result
     
     def remove_rule(self, index: int):
         try:

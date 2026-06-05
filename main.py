@@ -1,5 +1,4 @@
 
-print("LOADING main.py")
 
 import threading
 
@@ -23,9 +22,17 @@ def review(scan: scan.Scan, max_scans):
         running_scans+=1
     try:
         provider = ollamaProvider.OllamaProvider("qwen2.5-coder:3b")
-        code_reviewer = codeReviewer.CodeReviewer(provider, "You are a code reviewer. Check code according to the given rules.")
-        print("Reviewing file!\n")
-        print(code_reviewer.review(scan))
+        code_reviewer = codeReviewer.CodeReviewer(provider, "You are a strict Python code compliance checker. " \
+        "You must evaluate only the Python code provided by the user. " \
+        "Do not assume missing code. " \
+        "Do not infer code that is not shown. " \
+        "Do not suggest fixes. " \
+        "Do not explain your answer. " \
+        "Do not mention style advice. " \
+        "Your output must be exactly one word: YES or NO")
+        result = code_reviewer.review(scan)
+        print(result)
+        scan.add_result(result)
 
     finally:
         with resource_lock:

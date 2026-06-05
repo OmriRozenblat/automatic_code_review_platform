@@ -1,4 +1,3 @@
-print("LOADING ollamaProvider.py")
 
 import ollama
 from codeReviewer.modelProvider import ModelProvider

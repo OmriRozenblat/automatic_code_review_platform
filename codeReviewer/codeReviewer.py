@@ -1,4 +1,3 @@
-print("LOADING codeReviewer.py")
 
 import scan.scan as scan
 from codeReviewer.modelProvider import ModelProvider
@@ -21,21 +20,29 @@ class CodeReviewer:
             }
         ]
 
-        return self.model_provider.generate(messages)
+        model_result =  self.model_provider.generate(messages).strip().upper()
+        if model_result == "Yes":
+            return "Yes"
+        if model_result == "NO":
+            return "NO"
+        return "INVALID_MODEL_OUTPUT"
 
-    def _build_user_prompt(self, scan) -> str:
-        rules_text = "\n".join(
-            f"{index + 1}. {rule}"
-            for index, rule in enumerate(scan.get_rules())
-        )
+
+
+    def _build_user_prompt(self, scan: scan.Scan) -> str:
+        
+        print("scan file content\n")
+        print(scan.get_content())
+        print("------------------")
 
         return f"""
-Review the following Python code according to the rules.
+            Check whether the following Python code complies with this rule.
 
-Rules:
-{rules_text}
 
-Code:
-{scan.get_content()}
-"""
-        
+            Rules:
+            {scan.convert_rules_to_text()}
+
+            Code:
+            {scan.get_content()}
+            """
+                    

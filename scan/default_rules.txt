@@ -1,2 +1,2 @@
 All variables have meaningful names
-docstring of function reflects the actual code’s logic
+docstring of function reflects the actual code logic
