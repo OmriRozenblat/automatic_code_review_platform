@@ -88,7 +88,8 @@ def get_scan():
         
         elif user_input == "fetch":
             fetch_scan_id = input(f"Please enter scan id: \n")
-            print(db.get_scan(fetch_scan_id))
+            row = db.get_scan(fetch_scan_id)
+            print(db.parse_row(row))
         
         elif user_input == "q":
             return 0

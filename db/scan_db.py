@@ -1,4 +1,5 @@
 import sqlite3
+import hashlib
 
 import scan.scan as scan
 
@@ -30,15 +31,23 @@ class ScanDB:
     def insert_new_scan(self, scan: scan.Scan):
         conn = sqlite3.connect(self.path)
         cursor = conn.cursor()
+        hash_obj_rules = hashlib.sha256(scan.convert_rules_to_text().encode('utf-8'))
+        hash_obj_content = hashlib.sha256(scan.convert_rules_to_text().encode('utf-8'))
+
+        rules_hash = hash_obj_rules.hexdigest()
+        content_hash = hash_obj_content.hexdigest()
+
 
         cursor.execute("""
         INSERT INTO scans (
             file_name,
             rules,
+            content_hash
+            rules_hash
             created_at
         )
-        VALUES (?, ?, datetime('now'));
-        """, (scan.file_name, scan.convert_rules_to_text(), ))
+        VALUES (?, ?, ?, ?, datetime('now'));
+        """, (scan.file_name, scan.convert_rules_to_text(), content_hash, rules_hash,))
 
         scan_id = cursor.lastrowid
         scan.update_id(scan_id)
@@ -62,6 +71,7 @@ class ScanDB:
 
     def get_scan(self, scan_id: int):
         conn = sqlite3.connect(self.path)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
         
@@ -69,7 +79,7 @@ class ScanDB:
         cursor.execute(""" DELETE FROM scans WHERE created_at < datetime('now', '-24 hours')
                         AND id = ?; """,(scan_id,)) 
         
-        cursor.execute(""" SELECT id, file_name, result,
+        cursor.execute(""" SELECT id, file_name, rules, result,
                         created_at FROM scans WHERE id = ?; """, (scan_id,))
 
         row = cursor.fetchone()
@@ -77,6 +87,20 @@ class ScanDB:
         conn.close()
         #may return None, depanding if row exist\expired
         return row
+    
+    def parse_row(self, row):
+        if row is None:
+            return "Scan not found or expired" 
+            
+        else:
+
+            return (f"Scan ID: {row['id']}\n"
+                    f"File name: {row['file_name']}\n"
+                    f"Rules:\n{row['rules']}\n\n"
+                    f"Result: {row['result']}\n"
+                    f"Created at: {row['created_at']}\n"
+                    )
+
 
 
 
