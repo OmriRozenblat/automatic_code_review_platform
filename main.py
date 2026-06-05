@@ -1,9 +1,12 @@
 
+print("LOADING main.py")
+
 import threading
 
 
 import scan.scan as scan
 import codeReviewer.codeReviewer as codeReviewer
+import codeReviewer.ollamaProvider as ollamaProvider
 
 running_scans = 0
 resource_lock = threading.Lock()
@@ -15,13 +18,14 @@ def review(scan: scan.Scan, max_scans):
     global running_scans
     with resource_lock:
         if running_scans >= max_scans:
-            print("Maximum scans reached. try again later")
+            print(f"Maximum scans reached ({max_scans}). try again later\n")
             return
         running_scans+=1
     try:
-        code_reviewer = codeReviewer.CodeReviewer()
+        provider = ollamaProvider.OllamaProvider("qwen2.5-coder:3b")
+        code_reviewer = codeReviewer.CodeReviewer(provider, "You are a code reviewer. Check code according to the given rules.")
         print("Reviewing file!\n")
-        code_reviewer.review()
+        print(code_reviewer.review(scan))
 
     finally:
         with resource_lock:
@@ -71,7 +75,7 @@ def get_scan():
         elif user_input == "q":
             return 0
         else:
-            print("Not a valid input")
+            print("Not a valid input\n")
         
 
     

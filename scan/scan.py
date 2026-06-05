@@ -30,6 +30,10 @@ class Scan:
     def get_rules(self):
         return self.rules
     
+    def get_content(self):
+        return self.content
+
+    
     def get_file_path(self):
         return self.path
     
