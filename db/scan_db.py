@@ -19,7 +19,7 @@ class ScanDB:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             file_name TEXT NOT NULL,
             rules_hash TEXT,
-            content_hash, TEXT        
+            content_hash TEXT,        
             rules TEXT NOT NULL,
             content TEXT NOT NULL,
             result TEXT,

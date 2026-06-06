@@ -17,6 +17,7 @@ class Scan:
             if self.path is None:
                 raise FileNotFoundError("No .py file found in file_to_scan")
         else:
+            path = path.strip('"')
             self.path = Path(path)
             print(self.path)
         #check given path
