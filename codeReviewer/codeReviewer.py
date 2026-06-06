@@ -30,22 +30,13 @@ class CodeReviewer:
         if len(model_result_list) != len(scan.get_rules()):
             return "INVALID_MODEL_OUTPUT"
         for res in model_result_list:
-            if res.split()[1] not in ["YES", "NO"]:
+            if res.split()[1] not in ["TRUE", "FALSE"]:
                 return "INVALID_MODEL_OUTPUT"
         
         
         print(model_result + "\n")
         return model_result
         
-
-
-
-        print(model_result + "\n")
-        if model_result == "YES":
-            return "TRUE"
-        if model_result == "NO":
-            return "FALSE"
-        return "INVALID_MODEL_OUTPUT"
 
 
 

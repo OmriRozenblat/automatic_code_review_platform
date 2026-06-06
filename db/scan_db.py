@@ -111,11 +111,13 @@ class ScanDB:
             
         else:
 
-            return (f"\nScan ID: {row['id']}\n\n"
+            return ("\n--------------------------"
+                    f"\nScan ID: {row['id']}\n\n"
                     f"File name: {row['file_name']}\n\n"
                     f"Rules:\n{row['rules']}\n\n"
                     f"Results:\n{row['result']}\n\n"
                     f"Created at: {row['created_at']}\n"
+                    "--------------------------\n"
                     )
 
 
