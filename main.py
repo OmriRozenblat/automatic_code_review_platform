@@ -68,7 +68,14 @@ def get_scan():
                     #continue to scan
                     #maybe just add it to folder and cancel the path part
                     path = input("Enter path to python file, or add it to the folder, then press Enter: \n")
-                    current_scan.get_file_from_path(path)
+                    
+                    try:
+                        current_scan.get_file_from_path(path)
+                    except FileNotFoundError as e:
+                        print(e)
+                        break
+
+                        
 
                     #adding scan to DB
                     status, scan_id = db.insert_new_scan(current_scan)

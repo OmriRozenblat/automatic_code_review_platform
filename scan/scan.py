@@ -12,7 +12,7 @@ class Scan:
     def get_file_from_path(self, path: str):
         if not path:
             folder = Path(__file__).parent.parent / "file_to_scan"
-            self.path = next(folder.glob("*.*"), None)
+            self.path = next(folder.glob("*.py"), None)
             print(self.path)
             if self.path is None:
                 raise FileNotFoundError("No .py file found in file_to_scan")
@@ -26,8 +26,8 @@ class Scan:
             with open(self.path, "r") as f:
                 self.content = f.read()
         except FileNotFoundError:
-            print("File was not dound in given path. try again\n")
-            return
+            raise FileNotFoundError("Can't find file in Path.")
+
 
 
     def get_rules(self):
