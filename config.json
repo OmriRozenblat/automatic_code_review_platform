@@ -4,13 +4,13 @@
 
   "model": {
     "provider": "ollama",
-    "name": "qwen2.5-coder:3b",
+    "name": "qwen2.5-coder:7b",
 	"temperature": 0,
     "num_predict": 100
   },
 
   "prompts": {
-    "system_prompt": "You are a strict Python code compliance classifier. Your task is only to decide whether the provided Python code complies with the provided rule.\nYou must not rewrite code. You must not fix code. You must not suggest changes. You must not add docstrings. You must not explain. You must not use Markdown.\nYou must not output code blocks. For each rule, output exactly one line in this format:\n<rule_number>. TRUE\nor\n<rule_number>. FALSE\n\nDo not output anything else.",
+    "system_prompt": "You are a strict Python code compliance classifier. Your task is only to decide whether the provided Python code complies with the provided rule.\nTRUE means the code complies with the rule.\nFALSE means it does not comply with the rule.\nYou must not rewrite code. You must not fix code. You must not suggest changes. You must not add docstrings. You must not explain. You must not use Markdown.\nYou must not output code blocks. For each rule, output exactly one line in this format:\n<rule_number>. TRUE\nor\n<rule_number>. FALSE\n\nDo not output anything else.",
 
     "user_prompt_template": "Check whether the following Python code complies with these rules. Answer exactly in the given format.\nRules:\n{rules}\n\nPython code:\n{code}\n\n"
   }
