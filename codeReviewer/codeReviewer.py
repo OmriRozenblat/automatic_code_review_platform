@@ -22,6 +22,24 @@ class CodeReviewer:
         ]
 
         model_result =  self.model_provider.generate(messages).strip().upper()
+        model_result_list = model_result.splitlines()
+        print(model_result + "\n")
+        print(model_result_list)
+        print("\n")
+        print(scan.get_rules())
+        if len(model_result_list) != len(scan.get_rules()):
+            return "INVALID_MODEL_OUTPUT"
+        for res in model_result_list:
+            if res.split()[1] not in ["YES", "NO"]:
+                return "INVALID_MODEL_OUTPUT"
+        
+        
+        print(model_result + "\n")
+        return model_result
+        
+
+
+
         print(model_result + "\n")
         if model_result == "YES":
             return "TRUE"
