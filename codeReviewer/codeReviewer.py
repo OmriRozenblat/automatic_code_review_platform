@@ -31,7 +31,6 @@ class CodeReviewer:
                 return "INVALID_MODEL_OUTPUT"
         
         
-        #print(model_result + "\n")
         return model_result
         
 
@@ -39,7 +38,8 @@ class CodeReviewer:
 
     def _build_user_prompt(self, scan: scan.Scan) -> str:
         
-        
+        print(self.config.user_prompt_template.format(rules=scan.convert_rules_to_text(),
+                                                        code=scan.get_content()))
         return self.config.user_prompt_template.format(rules=scan.convert_rules_to_text(),
                                                         code=scan.get_content())
         

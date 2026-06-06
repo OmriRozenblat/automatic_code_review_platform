@@ -14,6 +14,8 @@ class Config:
         self.scan_ttl_minutes = self.config["scan_ttl_minutes"]
         self.model_provider = self.config["model"]["provider"]
         self.model_name = self.config["model"]["name"]
+        self.temperature = self.config["model"]["temperature"]
+        self.num_predict = self.config["model"]["num_predict"]
         self.system_prompt = self.config["prompts"]["system_prompt"]
         self.user_prompt_template = self.config["prompts"]["user_prompt_template"]
 

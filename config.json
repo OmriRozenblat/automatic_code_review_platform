@@ -1,10 +1,12 @@
 {
   "max_parallel_scans": 5,
-  "scan_ttl_minutes": 1,
+  "scan_ttl_minutes": 1440,
 
   "model": {
     "provider": "ollama",
-    "name": "qwen2.5-coder:3b"
+    "name": "qwen2.5-coder:3b",
+	"temperature": 0,
+    "num_predict": 100
   },
 
   "prompts": {

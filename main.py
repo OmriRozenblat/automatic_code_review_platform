@@ -23,7 +23,7 @@ def review(scan: scan.Scan, db: scan_db.ScanDB, config: Config.Config):
             return
         running_scans+=1
     try:
-        provider = ollamaProvider.OllamaProvider(config.model_name)
+        provider = ollamaProvider.OllamaProvider(config)
         code_reviewer = codeReviewer.CodeReviewer(provider, config)
         result = code_reviewer.review(scan)
         print(result)
