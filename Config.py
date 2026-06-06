@@ -11,7 +11,7 @@ class Config:
             raise FileNotFoundError("config file not found")
         
         self.max_parallel_scans = self.config["max_parallel_scans"]
-        self.scan_ttl_hours = self.config["scan_ttl_hours"]
+        self.scan_ttl_minutes = self.config["scan_ttl_minutes"]
         self.model_provider = self.config["model"]["provider"]
         self.model_name = self.config["model"]["name"]
         self.system_prompt = self.config["prompts"]["system_prompt"]

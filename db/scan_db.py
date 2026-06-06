@@ -12,7 +12,7 @@ class ScanDB:
     
         self.path = "scan_results.db"
 
-        conn = sqlite3.connect(self.path)
+        conn = sqlite3.connect(self.path, timeout=10)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -32,8 +32,8 @@ class ScanDB:
         conn.close()
 
 
-    def insert_new_scan(self, scan: scan.Scan):
-        conn = sqlite3.connect(self.path)
+    def insert_new_scan(self, scan: scan.Scan, config_data: Config.Config):
+        conn = sqlite3.connect(self.path, timeout=10)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         hash_obj_rules = hashlib.sha256(scan.convert_rules_to_text().encode('utf-8'))
@@ -51,6 +51,15 @@ class ScanDB:
         results = cursor.fetchall()
         for row in results:
             if row['content'] == scan.content and row["rules"] == scan.convert_rules_to_text():
+                #check if row is expired
+                cursor.execute(f""" DELETE FROM scans WHERE created_at < datetime('now', '-{config_data.scan_ttl_minutes} minutes')
+                        AND id = ?; """,(row["id"],))
+                if cursor.rowcount > 0:
+                    conn.commit()
+                    continue
+
+
+                conn.close()
                 return "exists", row["id"]
 
 
@@ -74,7 +83,7 @@ class ScanDB:
         return "new", scan_id
                 
     def update_scan(self, scan: scan.Scan):
-        conn = sqlite3.connect(self.path)
+        conn = sqlite3.connect(self.path, timeout=10)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -87,20 +96,23 @@ class ScanDB:
         conn.close()
 
     def get_scan(self, scan_id: int, config_data: Config.Config):
-        conn = sqlite3.connect(self.path)
+        conn = sqlite3.connect(self.path, timeout=10)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
         
 
-        cursor.execute(f""" DELETE FROM scans WHERE created_at < datetime('now', '-{config_data.scan_ttl_hours} hours')
+        cursor.execute(f""" DELETE FROM scans WHERE created_at < datetime('now', '-{config_data.scan_ttl_minutes} minutes')
                         AND id = ?; """,(scan_id,)) 
         
+        conn.commit()
+
         cursor.execute(""" SELECT id, file_name, rules, result,
                         created_at FROM scans WHERE id = ?; """, (scan_id,))
 
         row = cursor.fetchone()
-
+        
+        conn.commit()
         conn.close()
         #may return None, depanding if row exist\expired
         return row

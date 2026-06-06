@@ -1,6 +1,6 @@
 {
   "max_parallel_scans": 5,
-  "scan_ttl_hours": 24,
+  "scan_ttl_minutes": 1,
 
   "model": {
     "provider": "ollama",

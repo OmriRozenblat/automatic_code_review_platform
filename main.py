@@ -73,7 +73,7 @@ def get_scan():
                         
 
                     #adding scan to DB
-                    status, scan_id = db.insert_new_scan(current_scan)
+                    status, scan_id = db.insert_new_scan(current_scan, config)
                     if status == "exists":
                         print(f"Scan already exists with scan_id {scan_id}")
                         break
