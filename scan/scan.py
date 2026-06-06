@@ -13,13 +13,11 @@ class Scan:
         if not path:
             folder = Path(__file__).parent.parent / "file_to_scan"
             self.path = next(folder.glob("*.py"), None)
-            print(self.path)
             if self.path is None:
                 raise FileNotFoundError("No .py file found in file_to_scan")
         else:
             path = path.strip('"')
             self.path = Path(path)
-            print(self.path)
         #check given path
         self.file_name = self.path.name
         try:
