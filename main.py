@@ -7,6 +7,7 @@ import scan.scan as scan
 import codeReviewer.codeReviewer as codeReviewer
 import codeReviewer.ollamaProvider as ollamaProvider
 import db.scan_db as scan_db
+import Config
 
 running_scans = 0
 resource_lock = threading.Lock()
@@ -14,23 +15,16 @@ resource_lock = threading.Lock()
 
 
 
-def review(scan: scan.Scan, max_scans, db: scan_db.ScanDB):
+def review(scan: scan.Scan, db: scan_db.ScanDB, config: Config.Config):
     global running_scans
     with resource_lock:
-        if running_scans >= max_scans:
-            print(f"Maximum scans reached ({max_scans}). try again later\n")
+        if running_scans >= config.max_parallel_scans:
+            print(f"Maximum scans reached ({config.max_parallel_scans}). try again later\n")
             return
         running_scans+=1
     try:
-        provider = ollamaProvider.OllamaProvider("qwen2.5-coder:3b")
-        code_reviewer = codeReviewer.CodeReviewer(provider, "You are a strict Python code compliance checker. " \
-        "You must evaluate only the Python code provided by the user. " \
-        "Do not assume missing code. " \
-        "Do not infer code that is not shown. " \
-        "Do not suggest fixes. " \
-        "Do not explain your answer. " \
-        "Do not mention style advice. " \
-        "Your output must be exactly one word: YES or NO")
+        provider = ollamaProvider.OllamaProvider(config.model_name)
+        code_reviewer = codeReviewer.CodeReviewer(provider, config)
         result = code_reviewer.review(scan)
         print(result)
         scan.add_result(result)
@@ -47,6 +41,7 @@ def get_scan():
 
     print("Welcome to the ACR!\n")
     db = scan_db.ScanDB()
+    config = Config.Config()
 
     while True: 
         user_input = input("Would you like to fetch results or enter a new scan?\n" "Enter scan for new scan, fetch for fetching results, q to quit  \n")
@@ -85,7 +80,7 @@ def get_scan():
                     print(f"Your new scan id is {scan_id}. Keep it for future use")
 
                     #call thread with this scan
-                    thread = threading.Thread(target=review, args=(current_scan, 5, db))
+                    thread = threading.Thread(target=review, args=(current_scan, db, config))
                     thread.start()
                     break
 
