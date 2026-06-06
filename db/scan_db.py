@@ -2,6 +2,7 @@ import sqlite3
 import hashlib
 
 import scan.scan as scan
+import Config
 
 
 
@@ -85,14 +86,14 @@ class ScanDB:
         conn.commit()
         conn.close()
 
-    def get_scan(self, scan_id: int):
+    def get_scan(self, scan_id: int, config_data: Config.Config):
         conn = sqlite3.connect(self.path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
         
 
-        cursor.execute(""" DELETE FROM scans WHERE created_at < datetime('now', '-24 hours')
+        cursor.execute(f""" DELETE FROM scans WHERE created_at < datetime('now', '-{config_data.scan_ttl_hours} hours')
                         AND id = ?; """,(scan_id,)) 
         
         cursor.execute(""" SELECT id, file_name, rules, result,

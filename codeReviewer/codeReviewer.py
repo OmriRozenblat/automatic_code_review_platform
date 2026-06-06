@@ -33,20 +33,8 @@ class CodeReviewer:
 
     def _build_user_prompt(self, scan: scan.Scan) -> str:
         
-        ##print("scan file content\n")
-        ##print(scan.get_content())
-        ##print("------------------")
+        
         return self.config.user_prompt_template.format(rules=scan.convert_rules_to_text(),
                                                         code=scan.get_content())
         
-        #return f"""
-         #   Check whether the following Python code complies with this rules.
-
-
-          #  Rules:
-           # {scan.convert_rules_to_text()}
-
-            #Code:
-            #{scan.get_content()}
-            #"""
-                    
+        
