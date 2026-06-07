@@ -19,9 +19,6 @@ def review(scan: scan.Scan, db: scan_db.ScanDB, config: Config.Config):
     #using locks to prevent rece conditions
     global running_scans
     with resource_lock:
-        if running_scans >= config.max_parallel_scans:
-            print(f"Maximum scans reached ({config.max_parallel_scans}). try again later\n")
-            return
         running_scans+=1
     try:
         provider = ollamaProvider.OllamaProvider(config)
@@ -70,7 +67,12 @@ def get_scan():
                         break
 
                         
-
+                    #check for max scans
+                    global running_scans
+                    with resource_lock:
+                        if running_scans >= config.max_parallel_scans:
+                            print(f"Maximum scans reached ({config.max_parallel_scans}). try again later\n")
+                            break
                     #adding scan to DB
                     status, scan_id = db.insert_new_scan(current_scan, config)
                     if status == "exists":

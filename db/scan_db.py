@@ -15,6 +15,7 @@ class ScanDB:
         conn = sqlite3.connect(self.path, timeout=10)
         cursor = conn.cursor()
 
+        #create db if not exist
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS scans (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
