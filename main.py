@@ -26,7 +26,6 @@ def review(scan: scan.Scan, db: scan_db.ScanDB, config: Config.Config):
         provider = ollamaProvider.OllamaProvider(config)
         code_reviewer = codeReviewer.CodeReviewer(provider, config)
         result = code_reviewer.review(scan)
-        print(result)
         scan.add_result(result)
         db.update_scan(scan)
 
