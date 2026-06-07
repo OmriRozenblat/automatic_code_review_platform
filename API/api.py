@@ -52,7 +52,7 @@ class ScanCreateRequest(BaseModel):
 
     rules: list[str] = Field(default_factory=lambda: [
         "All variables have meaningful names",
-        "docstring of function reflects the actual code’s logic"
+        "docstring of function reflects the actual code logic"
     ],
         description="List of rules to check against the code"
     )
@@ -65,19 +65,24 @@ class ScanCreateRequest(BaseModel):
 
 @app.post("/scans")
 def create_scan(request: ScanCreateRequest):
-    new_scan  = scan.Scan(request.file_name, request.rules, request.content)
-    insert_result =  db.insert_new_scan(new_scan , config)
     
-    if insert_result["created"] is False:
-        return insert_result
-        
-
     global running_scans
     with resource_lock:
         if running_scans >= config.max_parallel_scans:
             # maybe update DB to failed/rejected
             return {"error": "Maximum scans reached"}
         running_scans+=1
+    
+    new_scan  = scan.Scan(request.file_name, request.rules, request.content)
+    insert_result =  db.insert_new_scan(new_scan , config)
+    
+    if insert_result["created"] is False:
+        with resource_lock:
+            running_scans-=1
+        return insert_result
+        
+
+    
 
     thread = threading.Thread(target=review, args=(new_scan, db, config))
     thread.start()
