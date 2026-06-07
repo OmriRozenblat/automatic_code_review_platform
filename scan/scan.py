@@ -3,11 +3,14 @@ from pathlib import Path
 
 
 class Scan:
-    def __init__(self):
-        default_rules_path = Path(__file__).parent / "default_rules.txt"
-        with open(default_rules_path, 'r') as f:
-            self.rules = f.read().splitlines() 
-        self.id = 0
+    def __init__(self, file_name: str, rules: list[str], content: str):
+        
+        self.file_name = file_name
+        self.rules = rules
+        self.content = content
+        #default_rules_path = Path(__file__).parent / "default_rules.txt"
+        #with open(default_rules_path, 'r') as f:
+        #    self.rules = f.read().splitlines() 
     
     def get_file_from_path(self, path: str):
         if not path:
@@ -54,7 +57,7 @@ class Scan:
         self.rules.append(rule)
         print("Rule added to scan\n")
 
-    def add_result(self, result: str):
+    def add_result(self, result: dict):
         self.result = result
 
     def get_result(self):

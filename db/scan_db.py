@@ -1,5 +1,6 @@
 import sqlite3
 import hashlib
+import json
 
 import scan.scan as scan
 import Config
@@ -24,6 +25,7 @@ class ScanDB:
             content_hash TEXT,        
             rules TEXT NOT NULL,
             content TEXT NOT NULL,
+            status TEXT NOT NULL,
             result TEXT,
             created_at TEXT NOT NULL 
         );
@@ -75,10 +77,11 @@ class ScanDB:
             content_hash,
             rules_hash,
             content,
+            status,
             created_at
         )
-        VALUES (?, ?, ?, ?, ?,datetime('now'));
-        """, (scan.file_name, scan.convert_rules_to_text(), content_hash, rules_hash,scan.get_content(),))
+        VALUES (?, ?, ?, ?, ?, ?,datetime('now'));
+        """, (scan.file_name, scan.convert_rules_to_text(), content_hash, rules_hash, scan.get_content(),"running",))
 
         scan_id = cursor.lastrowid
         scan.update_id(scan_id)
@@ -94,12 +97,13 @@ class ScanDB:
     def update_scan(self, scan: scan.Scan):
         conn = sqlite3.connect(self.path, timeout=10)
         cursor = conn.cursor()
+        result_json = json.dumps(scan.get_result())
 
         cursor.execute("""
         UPDATE scans
-        SET result = ?
+        SET result = ?, status = ?
         WHERE id = ?;
-        """, (scan.get_result(), scan.get_id()))
+        """, (result_json, "done", scan.get_id()))
 
         conn.commit()
         conn.close()
@@ -116,7 +120,7 @@ class ScanDB:
         
         conn.commit()
 
-        cursor.execute(""" SELECT id, file_name, rules, result,
+        cursor.execute(""" SELECT id, file_name, rules, result, status,
                         created_at FROM scans WHERE id = ?; """, (scan_id,))
 
         row = cursor.fetchone()
@@ -131,7 +135,7 @@ class ScanDB:
             "id": row["id"],
             "file_name": row["file_name"],
             "status": row["status"],
-            "result": row["result"],
+            "result": json.loads(row["result"]) if row["result"] is not None else None,
             "created_at": row["created_at"]
             }
     

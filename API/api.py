@@ -1,28 +1,34 @@
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
-import sqlite3
-import hashlib
 import scan.scan as scan
 import Config
 import db.scan_db as scan_db
 import threading
 import codeReviewer.ollamaProvider as ollamaProvider
-import codeReviewer
+from codeReviewer import codeReviewer
 
 
 running_scans = 0
 resource_lock = threading.Lock()
 
-def review(scan: scan.Scan, db: scan_db.ScanDB, config: Config.Config):
+def review(review_scan: scan.Scan, db: scan_db.ScanDB, config: Config.Config):
     #using locks to prevent rece conditions
     global running_scans
     
     try:
+        print("Review started for scan:")
+
         provider = ollamaProvider.OllamaProvider(config)
         code_reviewer = codeReviewer.CodeReviewer(provider, config)
-        result = code_reviewer.review(scan)
-        scan.add_result(result)
-        db.update_scan(scan)
+
+        results = {}
+        for rule in review_scan.get_rules():
+            results[rule] = code_reviewer.review(review_scan, rule)
+
+        print("Review result:", results)
+        review_scan.add_result(results)
+        db.update_scan(review_scan)
+        print("DB updated for scan:")
 
     finally:
         with resource_lock:
@@ -59,8 +65,8 @@ class ScanCreateRequest(BaseModel):
 
 @app.post("/scans")
 def create_scan(request: ScanCreateRequest):
-    scan = scan.Scan(request.file_name, request.rules, request.content)
-    insert_result =  db.insert_new_scan(scan, config)
+    new_scan  = scan.Scan(request.file_name, request.rules, request.content)
+    insert_result =  db.insert_new_scan(new_scan , config)
     
     if insert_result["created"] is False:
         return insert_result
@@ -73,7 +79,7 @@ def create_scan(request: ScanCreateRequest):
             return {"error": "Maximum scans reached"}
         running_scans+=1
 
-    thread = threading.Thread(target=review, args=(scan, db, config))
+    thread = threading.Thread(target=review, args=(new_scan, db, config))
     thread.start()
 
     return insert_result
