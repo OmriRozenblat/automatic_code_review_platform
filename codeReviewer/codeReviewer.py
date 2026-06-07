@@ -21,7 +21,7 @@ class CodeReviewer:
                 },
                 {
                     "role": "user",
-                    "content": self._build_user_prompt(scan, f"{index}. {rule}")
+                    "content": self._build_user_prompt(scan, f"{index+1}. {rule}")
                 }
             ]
 
