@@ -46,19 +46,31 @@ DB_PATH = "scans.db"
 
 class ScanCreateRequest(BaseModel):
 
-    file_name: str = Field(
-        description="Name of the Python file being scanned"
-    )
+    file_name: str = Field(description="Name of the Python file being scanned")
 
     rules: list[str] = Field(default_factory=lambda: [
         "All variables have meaningful names",
-        "docstring of function reflects the actual code logic"
-    ],
+        "docstring of function reflects the actual code logic"],
         description="List of rules to check against the code"
     )
-    content: str = Field(
-        description="The Python source code to scan"
-    )
+    content: str = Field(description="The Python source code to scan")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "file_name": "hello.py",
+                "rules": [
+                    "Variable names should be meaningful",
+                    "Do not use global variables",
+                    "Functions should be short"
+                ],
+                "content": "def hello():\n    print(\"hello world\")"
+            }
+        }
+    }
+
+
+
 
 
 
