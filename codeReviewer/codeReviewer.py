@@ -10,37 +10,43 @@ class CodeReviewer:
         self.config = config
 
     def review(self, scan: scan.Scan):
-        messages = [
-            {
-                "role": "system",
-                "content": self.config.system_prompt
-            },
-            {
-                "role": "user",
-                "content": self._build_user_prompt(scan)
-            }
-        ]
+        rules = scan.get_rules()
+        model_result_list = []
+        for index, rule in enumerate(rules):
 
-        model_result =  self.model_provider.generate(messages).strip().upper()
-        model_result_list = model_result.splitlines()
+            messages = [
+                {
+                    "role": "system",
+                    "content": self.config.system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": self._build_user_prompt(scan, f"{index}. {rule}")
+                }
+            ]
+
+            model_result_list.append(self.model_provider.generate(messages).strip().upper())
 
         if len(model_result_list) != len(scan.get_rules()):
             return "INVALID_MODEL_OUTPUT"
+        print(model_result_list)
         for res in model_result_list:
             if res.split()[1] not in ["TRUE", "FALSE"]:
                 return "INVALID_MODEL_OUTPUT"
         
         
-        return model_result
+        return "\n".join(model_result_list)
         
 
 
-
-    def _build_user_prompt(self, scan: scan.Scan) -> str:
+    def _build_user_prompt(self, scan: scan.Scan, rules: str) -> str:
         
-        print(self.config.user_prompt_template.format(rules=scan.convert_rules_to_text(),
+        
+        print(self.config.user_prompt_template.format(rules=rules,
                                                         code=scan.get_content()))
-        return self.config.user_prompt_template.format(rules=scan.convert_rules_to_text(),
+        return self.config.user_prompt_template.format(rules=rules,
                                                         code=scan.get_content())
+        
+
         
         
