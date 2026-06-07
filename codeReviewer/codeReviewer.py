@@ -27,6 +27,7 @@ class CodeReviewer:
 
             model_result_list.append(self.model_provider.generate(messages).strip().upper())
 
+        #validate model output
         if len(model_result_list) != len(scan.get_rules()):
             return "INVALID_MODEL_OUTPUT"
         for res in model_result_list:

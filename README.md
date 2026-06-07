@@ -35,6 +35,11 @@ This project uses Ollama as the local model provider.
 
 First, make sure Ollama is installed and running.
 
+
+```bash
+ollama 
+```
+
 To pull a model, for example:
 
 ```bash

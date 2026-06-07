@@ -16,6 +16,7 @@ resource_lock = threading.Lock()
 
 
 def review(scan: scan.Scan, db: scan_db.ScanDB, config: Config.Config):
+    #using locks to prevent rece conditions
     global running_scans
     with resource_lock:
         if running_scans >= config.max_parallel_scans:
@@ -60,7 +61,6 @@ def get_scan():
                 
                 elif user_input2 == '':
                     #continue to scan
-                    #maybe just add it to folder and cancel the path part
                     path = input("Enter path to python file, or add it to the folder, then press Enter: \n")
                     
                     try:
