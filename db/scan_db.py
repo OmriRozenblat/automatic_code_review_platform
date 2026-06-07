@@ -61,7 +61,11 @@ class ScanDB:
 
 
                 conn.close()
-                return "exists", row["id"]
+                return {
+                    "message": "Scan already exists",
+                    "scan_id": row["id"],
+                    "created": False
+                }
 
 
         cursor.execute("""
@@ -81,7 +85,11 @@ class ScanDB:
 
         conn.commit()
         conn.close()
-        return "new", scan_id
+        return {
+                    "message": "Scan submitted",
+                    "scan_id": scan_id,
+                    "created": True
+        }
                 
     def update_scan(self, scan: scan.Scan):
         conn = sqlite3.connect(self.path, timeout=10)
@@ -116,7 +124,16 @@ class ScanDB:
         conn.commit()
         conn.close()
         #may return None, depanding if row exist\expired
-        return row
+        if row is None:
+            return {"error": "Scan not found"}
+
+        return {
+            "id": row["id"],
+            "file_name": row["file_name"],
+            "status": row["status"],
+            "result": row["result"],
+            "created_at": row["created_at"]
+            }
     
     def parse_row(self, row):
         if row is None:
