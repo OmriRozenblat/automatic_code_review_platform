@@ -107,11 +107,26 @@ python3 main.py
 
 After starting the program, follow the terminal instructions.
 
+
 You will be able to:
 
 * Submit a new scan
 * Fetch existing scan results
 * Quit the program
+
+## Input File
+
+When starting a scan, you can provide a direct path to the Python file you want to scan.
+
+For example:
+
+```text
+C:/Users/paul_muadib/file.py
+```
+
+Alternatively, you can place the file inside the `file_to_scan` folder.
+If no path is provided, the program will automatically scan the first file found in that folder.
+
 
 ## Basic Flow
 
