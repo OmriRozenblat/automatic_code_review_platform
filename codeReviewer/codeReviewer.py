@@ -29,7 +29,6 @@ class CodeReviewer:
 
         if len(model_result_list) != len(scan.get_rules()):
             return "INVALID_MODEL_OUTPUT"
-        print(model_result_list)
         for res in model_result_list:
             if res.split()[1] not in ["TRUE", "FALSE"]:
                 return "INVALID_MODEL_OUTPUT"
@@ -41,9 +40,6 @@ class CodeReviewer:
 
     def _build_user_prompt(self, scan: scan.Scan, rules: str) -> str:
         
-        
-        print(self.config.user_prompt_template.format(rules=rules,
-                                                        code=scan.get_content()))
         return self.config.user_prompt_template.format(rules=rules,
                                                         code=scan.get_content())
         
