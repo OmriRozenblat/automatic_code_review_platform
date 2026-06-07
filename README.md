@@ -139,6 +139,8 @@ If no path is provided, the program will automatically scan the first file found
 7. Receive a scan ID.
 8. Fetch the result later using the scan ID.
 
+Please note result will be None if model did not output a result yet.
+
 ## Notes
 
 * The project currently focuses on Python code review.
