@@ -102,6 +102,9 @@ uvicorn API.api:app --reload
 
 ## Use the CLI
 Open a different terminal from project root.
+
+Remember to be in the venv(:
+
 The CLI client is:
 
 ```text
