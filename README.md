@@ -146,8 +146,6 @@ python acr.py fetch --id 1
 ## Notes
 
 * Ollama must be running before submitting scans.
-* `acr.py` is only a client over the API.
-* The review logic runs through the FastAPI server.
 * Results are stored in local SQLite.
 * Expired scans are deleted according to the configuration.
 
