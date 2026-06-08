@@ -42,7 +42,6 @@ app = FastAPI(
 
 db = scan_db.ScanDB()
 config = Config.Config()
-DB_PATH = "scans.db"
 
 class ScanCreateRequest(BaseModel):
 
