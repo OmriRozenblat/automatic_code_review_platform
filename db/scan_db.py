@@ -64,7 +64,7 @@ class ScanDB:
             should_cleanup = True
         else:
             last_cleanup = datetime.fromisoformat(row[0])
-            if now - last_cleanup >= timedelta(hours=config_data.delete_interval):
+            if now - last_cleanup >= timedelta(minutes=config_data.delete_interval):
                 should_cleanup = True
 
         if should_cleanup:
@@ -72,7 +72,7 @@ class ScanDB:
                 DELETE FROM scans
                 WHERE created_at < ?;
             """, ((now - timedelta(minutes=config_data.scan_ttl_minutes)).isoformat(),))
-
+            
             cursor.execute("""
                 INSERT OR REPLACE INTO metadata (key, value)
                 VALUES ('last_cleanup_at', ?);

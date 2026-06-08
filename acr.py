@@ -1,12 +1,14 @@
 import requests
 from pathlib import Path
 import argparse
+import os
+from Config import Config
 
+config = Config()
 
+API_BASE_URL = os.getenv("ACR_API_BASE_URL", config.API_BASE_URL)
 
-API_URL = "http://127.0.0.1:8000/scans"
-
-DEFAULT_RULES_PATH = Path(__file__).resolve().parent.parent / "scan" / "default_rules.txt"
+DEFAULT_RULES_PATH = Path(__file__).resolve().parent / "scan" / "default_rules.txt"
 
 
 
@@ -45,7 +47,7 @@ def parse_generic(data):
 
 def read_file(path: str):
     if not path:
-        folder = Path(__file__).parent.parent / "file_to_scan"
+        folder = Path(__file__).resolve().parent / "file_to_scan"
         file_path = next(folder.glob("*.py"), None)
 
         if file_path is None:
@@ -118,11 +120,11 @@ def main():
             "rules": rules,
             "content": content
             }
-        response = requests.post(API_URL, json=data)
+        response = requests.post(f"{API_BASE_URL}/scans", json=data)
         parse_generic(response.json())
 
     elif args.command == "fetch":
-        response = requests.get(f"{API_URL}/{args.id}")
+        response = requests.get(f"{API_BASE_URL}/scans/{args.id}")
         parse_generic(response.json())
 
 

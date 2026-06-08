@@ -9,7 +9,7 @@ class Config:
                 self.config = json.load(f)
         except FileNotFoundError:
             raise FileNotFoundError("config file not found")
-        
+        self.API_BASE_URL = self.config["API_BASE_URL"]
         self.max_parallel_scans = self.config["max_parallel_scans"]
         self.delete_interval = self.config["delete_interval_minutes"]
         self.scan_ttl_minutes = self.config["scan_ttl_minutes"]
