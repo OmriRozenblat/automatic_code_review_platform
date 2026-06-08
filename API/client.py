@@ -79,11 +79,12 @@ def main():
     )
 
     scan_parser.add_argument(
-        "--rules",
-        nargs="+",
-        default=load_default_rules(),
-        help="Rules to check if code complies with"
-    )
+    "--add-rules",
+    nargs="+",
+    default=[],
+    help="Add extra rules for this scan only. Write each rule inside quotes."
+)
+
 
     results_parser = subparsers.add_parser(
         "fetch",
@@ -97,6 +98,7 @@ def main():
         help="Scan id returned from the scan command"
     )
 
+
     args = parser.parse_args()
 
     if args.command == "scan":
@@ -104,16 +106,29 @@ def main():
             file_name, content = read_file(args.path)
         except FileNotFoundError:
             raise FileNotFoundError("Can't find python file in given or default path")
+        
+        rules = load_default_rules()
+        rules.extend(args.add_rules)
+        
         data = {
             "file_name": file_name,
-            "rules": args.rules,
+            "rules": rules,
             "content": content
             }
         response = requests.post(API_URL, json=data)
+        parse_generic(response.json())
 
     elif args.command == "fetch":
         response = requests.get(f"{API_URL}/{args.id}")
-    parse_generic(response.json())
+        parse_generic(response.json())
+
+
+    
+    else:
+        print("Command not found.")
+        return
+
+    return
 
     
 
