@@ -30,6 +30,27 @@ def read_multiline(prompt: str, stop_word: str = "") -> str:
 
     return "\n".join(lines)
 
+
+def read_file(path: str):
+    if not path:
+        folder = Path(__file__).parent.parent / "file_to_scan"
+        file_path = next(folder.glob("*.py"), None)
+
+        if file_path is None:
+            raise FileNotFoundError("No .py file found in file_to_scan")
+    else:
+        file_path = Path(path.strip().strip('"'))
+
+    try:
+        content = file_path.read_text(encoding="utf-8")
+        file_name = file_path.name
+        return file_name, content
+
+    except FileNotFoundError:
+        raise FileNotFoundError("Can't find file in path.")
+
+    
+
 def main():
 
 
@@ -37,53 +58,55 @@ def main():
         user_input = input("Would you like to fetch results or enter a new scan?\n" "Enter scan for new scan, fetch for fetching results, q to quit  \n")
         
         if user_input == "scan":
-            file_name = input("Enter file name: ").strip()
             
+            rules = load_default_rules()
             while True:
-                rules = load_default_rules()
-
+                
                 print("\nCurrent rules:")
                 for i, rule in enumerate(rules, start=1):
                     print(f"{i}. {rule}")
 
-                while True:
-                    user_input2 = input("Enter 'a' to add a rule, 'r' to remove, Press Enter to continue:\n")
-                    
-                    if user_input2 == 'a':
-                        new_rule = input("Enter a new rule: \n")
-                        rules.append(new_rule)
-                    
-                    elif user_input2 == 'r':
-                        remove_index = int(input("Enter rule index to remove: \n"))
-                        try:
-                            rules.pop(remove_index)
-                        except IndexError:
-                            print("Invalid index") ##########
-                            break
-                    
-                    elif user_input2 == '':
-                        #continue to scan
+                user_input2 = input("Enter 'a' to add a rule, 'r' to remove, Press Enter to continue:\n")
+                
+                if user_input2 == 'a':
+                    new_rule = input("Enter a new rule: \n")
+                    rules.append(new_rule)
+                
+                elif user_input2 == 'r':
+                    remove_index = int(input("Enter rule index to remove: \n"))
+                    try:
+                        rules.pop(remove_index)
+                    except IndexError:
+                        print("Invalid index\n") ##########
                         
-                        content = read_multiline("Enter Python code content:")                    
-                        
-                        data=data = {
-                            "file_name": file_name,
-                            "rules": rules,
-                            "content": content
-                            }
-
-                        response = requests.post(API_URL, json=data)
-
-                        print("Response:")
-                        print(response.json())
+                
+                elif user_input2 == '':
+                    #continue to scan
+                    path = input("Enter path to python file, or add it to the folder, then press Enter: \n")
+                    try:
+                        file_name, content = read_file(path)
+                    except FileNotFoundError as e:
+                        print(e)
                         break
                     
-                    elif user_input2 == "q":
-                        return 0
-                    
-                    else:
-                        print("Invalid input, try again\n")
-        
+                    data=data = {
+                        "file_name": file_name,
+                        "rules": rules,
+                        "content": content
+                        }
+
+                    response = requests.post(API_URL, json=data)
+
+                    print("Response:")
+                    print(response.json())
+                    break
+                
+                elif user_input2 == "q":
+                    return 0
+                
+                else:
+                    print("Invalid input, try again\n")
+    
         elif user_input == "fetch":
 
             scan_id = input("Enter scan_id: \n").strip()
@@ -92,7 +115,7 @@ def main():
 
             print("Response:")
             print(response.json())
-            break
+            
 
             
         
