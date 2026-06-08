@@ -93,7 +93,7 @@ For 24-hour retention:
 
 ## Run the Server
 
-From the project root:
+From the project root (from the venv):
 
 ```bash
 uvicorn API.api:app --reload
