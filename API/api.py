@@ -54,19 +54,6 @@ class ScanCreateRequest(BaseModel):
     )
     content: str = Field(description="The Python source code to scan")
 
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "file_name": "hello.py",
-                "rules": [
-                    "Variable names should be meaningful",
-                    "Do not use global variables",
-                    "Functions should be short"
-                ],
-                "content": "def hello():\n    print(\"hello world\")"
-            }
-        }
-    }
 
 
 
@@ -77,12 +64,11 @@ class ScanCreateRequest(BaseModel):
 @app.post("/scans")
 def create_scan(request: ScanCreateRequest):
     db.cleanup_if_needed(config)
-    
+    #lock implementation
     global running_scans
     with resource_lock:
         if running_scans >= config.max_parallel_scans:
-            # maybe update DB to failed/rejected
-            #raise HTTPException(status_code=429, detail="Maximum scans reached")
+            
             return {"error": "Maximum scans reached"}
         running_scans+=1
     try:

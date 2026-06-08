@@ -49,6 +49,7 @@ def parse_generic(data):
 
 
 def read_file(path: str):
+    #load actual py file
     if not path:
         folder = Path(__file__).resolve().parent / "file_to_scan"
         file_path = next(folder.glob("*.py"), None)
@@ -68,6 +69,7 @@ def read_file(path: str):
 
 
 def main():
+    #python cli for the API
     parser = argparse.ArgumentParser(
         description="Automatic Code Review Platform"
     )
