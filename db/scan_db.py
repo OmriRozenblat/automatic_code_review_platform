@@ -1,7 +1,7 @@
 import sqlite3
 import hashlib
 import json
-
+from datetime import datetime, timedelta
 import scan.scan as scan
 import Config
 
@@ -16,10 +16,20 @@ class ScanDB:
         conn = sqlite3.connect(self.path, timeout=10)
         cursor = conn.cursor()
 
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS metadata (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+    """)
+
+        
+
+
         #create db if not exist
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS scans (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            scan_id INTEGER PRIMARY KEY AUTOINCREMENT,
             file_name TEXT NOT NULL,
             rules_hash TEXT,
             content_hash TEXT,        
@@ -34,6 +44,42 @@ class ScanDB:
         conn.commit()
         conn.close()
 
+    def cleanup_if_needed(self, config_data: Config.Config):
+        conn = sqlite3.connect(self.path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT value
+            FROM metadata
+            WHERE key = 'last_cleanup_at';
+        """)
+
+        row = cursor.fetchone()
+
+        now = datetime.now()
+
+        should_cleanup = False
+
+        if row is None:
+            should_cleanup = True
+        else:
+            last_cleanup = datetime.fromisoformat(row[0])
+            if now - last_cleanup >= timedelta(hours=config_data.delete_interval):
+                should_cleanup = True
+
+        if should_cleanup:
+            cursor.execute("""
+                DELETE FROM scans
+                WHERE created_at < ?;
+            """, ((now - timedelta(minutes=config_data.scan_ttl_minutes)).isoformat(),))
+
+            cursor.execute("""
+                INSERT OR REPLACE INTO metadata (key, value)
+                VALUES ('last_cleanup_at', ?);
+            """, (now.isoformat(),))
+
+        conn.commit()
+        conn.close()
 
     def insert_new_scan(self, scan: scan.Scan, config_data: Config.Config):
         conn = sqlite3.connect(self.path, timeout=10)
@@ -56,7 +102,7 @@ class ScanDB:
             if row['content'] == scan.content and row["rules"] == scan.convert_rules_to_text():
                 #check if row is expired
                 cursor.execute(f""" DELETE FROM scans WHERE created_at < datetime('now', '-{config_data.scan_ttl_minutes} minutes')
-                        AND id = ?; """,(row["id"],))
+                        AND scan_id = ?; """,(row["scan_id"],))
                 if cursor.rowcount > 0:
                     conn.commit()
                     continue
@@ -65,7 +111,7 @@ class ScanDB:
                 conn.close()
                 return {
                     "message": "Scan already exists",
-                    "scan_id": row["id"],
+                    "scan_id": row["scan_id"],
                     "created": False
                 }
 
@@ -102,7 +148,7 @@ class ScanDB:
         cursor.execute("""
         UPDATE scans
         SET result = ?, status = ?
-        WHERE id = ?;
+        WHERE scan_id = ?;
         """, (result_json, "done", scan.get_id()))
 
         conn.commit()
@@ -116,12 +162,12 @@ class ScanDB:
         
 
         cursor.execute(f""" DELETE FROM scans WHERE created_at < datetime('now', '-{config_data.scan_ttl_minutes} minutes')
-                        AND id = ?; """,(scan_id,)) 
+                        AND scan_id = ?; """,(scan_id,)) 
         
         conn.commit()
 
-        cursor.execute(""" SELECT id, file_name, rules, result, status,
-                        created_at FROM scans WHERE id = ?; """, (scan_id,))
+        cursor.execute(""" SELECT scan_id, file_name, rules, result, status,
+                        created_at FROM scans WHERE scan_id = ?; """, (scan_id,))
 
         row = cursor.fetchone()
         
@@ -132,7 +178,7 @@ class ScanDB:
             return {"error": "Scan not found"}
 
         return {
-            "id": row["id"],
+            "scan_id": row["scan_id"],
             "file_name": row["file_name"],
             "status": row["status"],
             "result": json.loads(row["result"]) if row["result"] is not None else None,
@@ -146,7 +192,7 @@ class ScanDB:
         else:
 
             return ("\n--------------------------"
-                    f"\nScan ID: {row['id']}\n\n"
+                    f"\nScan ID: {row['scan_id']}\n\n"
                     f"File name: {row['file_name']}\n\n"
                     f"Rules:\n{row['rules']}\n\n"
                     f"Results:\n{row['result']}\n\n"

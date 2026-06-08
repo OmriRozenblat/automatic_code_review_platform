@@ -1,10 +1,13 @@
 import requests
 from pathlib import Path
+import argparse
+
 
 
 API_URL = "http://127.0.0.1:8000/scans"
 
 DEFAULT_RULES_PATH = Path(__file__).resolve().parent.parent / "scan" / "default_rules.txt"
+
 
 
 def load_default_rules() -> list[str]:
@@ -15,20 +18,26 @@ def load_default_rules() -> list[str]:
     with open(DEFAULT_RULES_PATH, "r") as f:
         return [line.strip() for line in f if line.strip()]
 
-def read_multiline(prompt: str, stop_word: str = "") -> str:
-    print(prompt)
-    print(f"Paste the full content below.")
-    print(f"When finished, type {stop_word} on a new line and press Enter.")
+def parse_generic(data):
 
-    lines = []
+    if "error" in data:
+        print(data["error"])
+        print("Please try again later.")
+        return
 
-    while True:
-        line = input()
-        if line == stop_word:
-            break
-        lines.append(line)
+    if "message" in data:
+        print(data["message"])
 
-    return "\n".join(lines)
+    if "scan_id" in data:
+        print(f"Scan ID: {data['scan_id']}")
+
+    if "status" in data:
+        print(f"Status: {data['status']}")
+
+    if "result" in data and data["result"] is not None:
+        print("\nResults:")
+        for rule, passed in data["result"].items():
+            print(f"- {rule}: {passed}")
 
 
 def read_file(path: str):
@@ -49,9 +58,139 @@ def read_file(path: str):
     except FileNotFoundError:
         raise FileNotFoundError("Can't find file in path.")
 
-    
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Automatic Code Review Platform"
+    )
+
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    scan_parser = subparsers.add_parser(
+        "scan",
+        help="Submit a Python file for code review"
+    )
+
+    scan_parser.add_argument(
+        "--path",
+        required=False,
+        default=None,
+        help="Path to Python file. If not given, first .py file from file_to_scan is used."
+    )
+
+    scan_parser.add_argument(
+        "--rules",
+        nargs="+",
+        default=load_default_rules(),
+        help="Rules to check if code complies with"
+    )
+
+    results_parser = subparsers.add_parser(
+        "fetch",
+        help="Fetch scan results by scan id"
+    )
+
+    results_parser.add_argument(
+        "--id",
+        required=True,
+        type=int,
+        help="Scan id returned from the scan command"
+    )
+
+    args = parser.parse_args()
+
+    if args.command == "scan":
+        try:
+            file_name, content = read_file(args.path)
+        except FileNotFoundError:
+            raise FileNotFoundError("Can't find python file in given or default path")
+        data = {
+            "file_name": file_name,
+            "rules": args.rules,
+            "content": content
+            }
+        response = requests.post(API_URL, json=data)
+
+    elif args.command == "fetch":
+        response = requests.get(f"{API_URL}/{args.id}")
+    parse_generic(response.json())
+
+    
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def read_multiline(prompt: str, stop_word: str = "") -> str:
+    print(prompt)
+    print(f"Paste the full content below.")
+    print(f"When finished, type {stop_word} on a new line and press Enter.")
+
+    lines = []
+
+    while True:
+        line = input()
+        if line == stop_word:
+            break
+        lines.append(line)
+
+    return "\n".join(lines)
+
+
+
+def parse_json_result(data):
+
+    print(f"\nScan ID: {data['id']}")
+    print(f"File name: {data['file_name']}")
+    print(f"Status: {data['status']}")
+    print(f"Created at: {data['created_at']}")
+
+    print("\nResults:")
+    if data["result"]:
+        for rule, passed in data["result"].items():
+            print(f"- {rule}: {passed}")
+    else:
+        print("No results yet.")
+
+
+
+
+def hello():
+    
 
 
     while True: 
@@ -88,17 +227,16 @@ def main():
                     except FileNotFoundError as e:
                         print(e)
                         break
-                    
-                    data=data = {
+                    data = {
                         "file_name": file_name,
                         "rules": rules,
                         "content": content
                         }
 
                     response = requests.post(API_URL, json=data)
-
-                    print("Response:")
-                    print(response.json())
+                    print("Status code:", response.status_code)
+                    print("Raw response:", response.text)
+                    parse_generic(response.json())
                     break
                 
                 elif user_input2 == "q":
@@ -113,8 +251,7 @@ def main():
 
             response = requests.get(f"{API_URL}/{scan_id}")
 
-            print("Response:")
-            print(response.json())
+            parse_json_result(response.json())
             
 
             
@@ -126,5 +263,3 @@ def main():
 
 
 
-if __name__ == "__main__":
-    main()

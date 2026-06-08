@@ -77,30 +77,35 @@ class ScanCreateRequest(BaseModel):
 
 @app.post("/scans")
 def create_scan(request: ScanCreateRequest):
+    db.cleanup_if_needed(config)
     
     global running_scans
     with resource_lock:
         if running_scans >= config.max_parallel_scans:
             # maybe update DB to failed/rejected
+            #raise HTTPException(status_code=429, detail="Maximum scans reached")
             return {"error": "Maximum scans reached"}
         running_scans+=1
-    
-    new_scan  = scan.Scan(request.file_name, request.rules, request.content)
-    insert_result =  db.insert_new_scan(new_scan , config)
-    
-    if insert_result["created"] is False:
-        with resource_lock:
-            running_scans-=1
-        return insert_result
+    try:
+        new_scan  = scan.Scan(request.file_name, request.rules, request.content)
+        insert_result =  db.insert_new_scan(new_scan , config)
         
+        if insert_result["created"] is False:
+            with resource_lock:
+                running_scans-=1
+            return insert_result
+            
+        thread = threading.Thread(target=review, args=(new_scan, db, config))
+        thread.start()
 
+        return insert_result
     
-
-    thread = threading.Thread(target=review, args=(new_scan, db, config))
-    thread.start()
-
-    return insert_result
+    except Exception:
+        with resource_lock:
+            running_scans -= 1
+        raise
 
 @app.get("/scans/{scan_id}")
 def get_scan(scan_id: int):
+    db.cleanup_if_needed(config)
     return db.get_scan(scan_id, config)
