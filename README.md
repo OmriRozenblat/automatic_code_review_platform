@@ -99,11 +99,6 @@ From the project root (from the venv):
 uvicorn API.api:app --reload
 ```
 
-API docs are available at:
-
-```text
-http://127.0.0.1:8000/docs
-```
 
 ## Use the CLI
 Open a different terminal from project root.
