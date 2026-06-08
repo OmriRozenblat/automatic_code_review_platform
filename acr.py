@@ -35,6 +35,9 @@ def parse_generic(data):
     if "scan_id" in data:
         print(f"Scan ID: {data['scan_id']}")
 
+    if "file_name" in data:
+        print(f"File name: {data['file_name']}")
+
     if "status" in data:
         print(f"Status: {data['status']}")
 
@@ -109,8 +112,9 @@ def main():
     if args.command == "scan":
         try:
             file_name, content = read_file(args.path)
-        except FileNotFoundError:
-            raise FileNotFoundError("Can't find python file in given or default path")
+        except FileNotFoundError as e:
+            print(e)
+            return
         
         rules = load_default_rules()
         rules.extend(args.add_rules)
@@ -128,10 +132,6 @@ def main():
         parse_generic(response.json())
 
 
-    
-    else:
-        print("Command not found.")
-        return
 
     return
 

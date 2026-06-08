@@ -1,62 +1,62 @@
 # Automatic Code Review Platform
 
-## Overview
+Local POC for an automatic Python code review platform.
 
-Automatic Code Review Platform is a local AI-integrated code reviewer.
+The system exposes a FastAPI server, receives scan requests through an API, reviews Python code using a local Ollama model, stores results in SQLite, and allows fetching results later by scan ID.
 
-The platform allows the user to provide Python code and a set of review rules.
-A local AI model then checks whether the code complies with each rule and stores the review result in a local database.
-
-The project is designed as a proof of concept for asynchronous AI-based code review.
+Everything runs locally. No cloud services are used.
 
 ## Features
 
-* Review Python code according to user-defined rules
-* Run reviews using a configurable local AI model
-* Store scan results in a local SQLite database
-* Fetch previous scan results by scan ID
-* Avoid duplicate scans by checking existing code/rules combinations
-* Configure scan expiration time
-* Configure the maximum number of scans running in parallel
-* Configure prompts and model settings through a config file
+* Submit Python files for review.
+* Review code using predefined rules.
+* Add extra rules per scan from the CLI.
+* Fetch scan results asynchronously.
+* Store results in a local SQLite database.
+* Reuse existing scan results when possible.
+* Limit the number of parallel scans.
+* Delete expired scan results automatically.
+
+## Default Rules
+
+The default rules are stored in:
+
+```text
+scan/default_rules.txt
+```
+
+Initial rules:
+
+```text
+All variables have meaningful names
+docstring of function reflects the actual code logic
+```
 
 ## Requirements
 
-Before running the project, make sure you have:
+* Python 3.11+
+* Ollama installed locally
+* Required Python packages from `requirements.txt`
 
-* Python 3 installed
-* Ollama installed
-* A supported Ollama model pulled locally
-* Required Python packages installed
-
-## Ollama Setup
-
-This project uses Ollama as the local model provider.
-
-First, make sure Ollama is installed and running.
-
-
-```bash
-ollama 
-```
-
-To pull a model, for example:
+Pull the configured Ollama model, for example:
 
 ```bash
 ollama pull qwen2.5-coder:7b
 ```
 
-You can test the model manually with:
-
-```bash
-ollama run qwen2.5-coder:7b
-```
-
-Make sure the model name in your config file matches the model you pulled.
-
 ## Installation
 
-Install the required Python packages:
+```bash
+python -m venv .venv
+```
+
+Windows PowerShell:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -64,24 +64,17 @@ pip install -r requirements.txt
 
 ## Configuration
 
-The platform can be configured through the config file.
+Configuration is in `config.json`.
 
-Configurable values include:
-
-* Maximum number of parallel scans
-* Scan result expiration time
-* AI model provider
-* AI model name
-* Model generation options
-* System prompt
-* User prompt template
-
-Example configuration fields:
+Example:
 
 ```json
 {
+  "API_BASE_URL": "http://127.0.0.1:8000",
   "max_parallel_scans": 5,
   "scan_ttl_minutes": 1440,
+  "delete_interval_minutes": 1440,
+
   "model": {
     "provider": "ollama",
     "name": "qwen2.5-coder:7b",
@@ -91,63 +84,73 @@ Example configuration fields:
 }
 ```
 
-## Running the Project
+For 24-hour retention:
 
-Run the main program:
-
-```bash
-python main.py
+```json
+"scan_ttl_minutes": 1440,
+"delete_interval_minutes": 1440
 ```
 
-or, depending on your environment:
+## Run the Server
+
+From the project root:
 
 ```bash
-python3 main.py
+uvicorn API.api:app --reload
 ```
 
-After starting the program, follow the terminal instructions.
-
-
-You will be able to:
-
-* Submit a new scan
-* Fetch existing scan results
-* Quit the program
-
-## Input File
-
-When starting a scan, you can provide a direct path to the Python file you want to scan.
-
-For example:
+API docs are available at:
 
 ```text
-C:/Users/paul_muadib/file.py
+http://127.0.0.1:8000/docs
 ```
 
-Alternatively, you can place the file inside the `file_to_scan` folder.
-If no path is provided, the program will automatically scan the first file found in that folder.
+## Use the CLI
 
+The CLI client is:
 
-## Basic Flow
+```text
+acr.py
+```
 
-1. Start Ollama.
-2. Pull the model you want to use.
-3. Install the project requirements.
-4. Configure the config file.
-5. Run `main.py`.
-6. Submit code and review rules.
-7. Receive a scan ID.
-8. Fetch the result later using the scan ID.
+Show help:
 
-Please note result will be None if model did not output a result yet.
+```bash
+python acr.py --help
+```
+
+Submit a scan using the default file from `file_to_scan/`:
+
+```bash
+python acr.py scan
+```
+
+Submit a specific file:
+
+```bash
+python acr.py scan --path file_to_scan/example.py
+```
+
+Submit with extra rules:
+
+```bash
+python acr.py scan --path file_to_scan/example.py --add-rules "code must have a print" "code must not use global variables"
+```
+
+Fetch results:
+
+```bash
+python acr.py fetch --id 1
+```
 
 ## Notes
 
-* The project currently focuses on Python code review.
-* Scan results are stored locally in SQLite.
-* Results expire after the configured time.
-* If the same code and same rules were already scanned, the platform can return the existing scan instead of running the model again.
-* For the proof of concept, scan requests may be rejected when the maximum number of parallel scans is reached.
+* Ollama must be running before submitting scans.
+* `acr.py` is only a client over the API.
+* The review logic runs through the FastAPI server.
+* Results are stored in local SQLite.
+* Expired scans are deleted according to the configuration.
+
 
 ## Troubleshooting
 
