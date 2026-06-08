@@ -20,6 +20,8 @@ def load_default_rules() -> list[str]:
 
 def parse_generic(data):
 
+    print("\n--------------")
+
     if "error" in data:
         print(data["error"])
         print("Please try again later.")
@@ -38,6 +40,7 @@ def parse_generic(data):
         print("\nResults:")
         for rule, passed in data["result"].items():
             print(f"- {rule}: {passed}")
+    print("--------------\n")
 
 
 def read_file(path: str):
