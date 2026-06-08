@@ -153,7 +153,7 @@ python acr.py fetch --id 1
 ## Troubleshooting
 
 If the model does not respond, make sure Ollama is running and that the configured model was pulled successfully.
-
+If you delete the db, please restart the server also.
 If the database becomes inconsistent during development or after a crash, you can delete the local database file and run the program again. The database will be recreated automatically on the next run.
 
 ## Disclaimer
