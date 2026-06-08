@@ -24,7 +24,7 @@ def parse_generic(data):
 
     if "error" in data:
         print(data["error"])
-        print("Please try again later.")
+        print("--------------\n")
         return
 
     if "message" in data:
