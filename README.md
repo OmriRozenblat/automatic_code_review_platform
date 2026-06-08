@@ -123,7 +123,7 @@ Submit a scan using the default file from `file_to_scan/`:
 python acr.py scan
 ```
 
-Submit a specific file:
+Submit a specific file (you can also specify a general path):
 
 ```bash
 python acr.py scan --path file_to_scan/example.py
