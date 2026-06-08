@@ -93,7 +93,7 @@ For 24-hour retention:
 
 ## Run the Server
 
-From the project root:
+From the project root (from the venv):
 
 ```bash
 uvicorn API.api:app --reload
@@ -106,7 +106,7 @@ http://127.0.0.1:8000/docs
 ```
 
 ## Use the CLI
-
+Open a different terminal from project root.
 The CLI client is:
 
 ```text
